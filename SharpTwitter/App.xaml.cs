@@ -15,10 +15,9 @@ namespace SharpTwitter
 
         private TwitterCommunicator twitterComm;
 
-        public App() {
-            Console.WriteLine("Tsting the construct");
-
+        public App() : base() {
             twitterComm = new TwitterCommunicator();
+            twitterComm.testCredentials();
         }
 
         public void Tweet(string message) {
@@ -71,6 +70,19 @@ namespace SharpTwitter
             else
             {
                 Console.WriteLine("error: {0}", statusResponse.ErrorMessage);
+            }
+        }
+
+        public void DirectMessage(string user, string message)
+        {
+        }
+
+        internal void testCredentials()
+        {
+            TwitterResponse<TwitterUser> verifyCredentialsRes = TwitterAccount.VerifyCredentials(tokens);
+            if (verifyCredentialsRes.Result != RequestResult.Success)
+            {
+                throw new ApplicationException(verifyCredentialsRes.ErrorMessage);
             }
         }
     }

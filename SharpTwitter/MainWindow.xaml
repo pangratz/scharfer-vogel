@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SharpTwitter" Height="400" Width="300">
     <Grid>
-        <TextBox Margin="12,0,12,34" Name="tweetTextBox" VerticalAlignment="Bottom" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" />
-        <Label Content="" Height="28" HorizontalAlignment="Right" Margin="0,333,12,0" Name="charactersLeftLabel" VerticalAlignment="Bottom" Width="30" FontSize="8" />
+        <TextBox Margin="12,0,12,18" Name="tweetTextBox" VerticalAlignment="Bottom" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" />
+        <Label Content="140" Height="28" Margin="247,0,-4,-9" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" />
     </Grid>
 </Window>
