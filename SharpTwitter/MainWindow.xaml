@@ -3,7 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SharpTwitter" Height="400" Width="300">
     <Grid>
-        <TextBox Margin="12,0,12,18" Name="tweetTextBox" VerticalAlignment="Bottom" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" />
-        <Label Content="140" Height="28" Margin="247,0,-4,-9" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" />
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="{Binding ElementName=tweetTextBox, Path=Height}" />
+            <RowDefinition MaxHeight="{Binding ElementName=charactersLeftLabel, Path=ActualHeight}" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Label Content="140" Height="28" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" Grid.Row="2" HorizontalContentAlignment="Right" />
+        <TextBox Name="tweetTextBox" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" Grid.Row="1" VerticalAlignment="Bottom" />
+        <ListView Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ></ListView>
     </Grid>
 </Window>

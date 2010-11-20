@@ -24,6 +24,10 @@ namespace SharpTwitter
             twitterComm.Tweet(message);
         }
 
+        public TwitterStatusCollection GetHomeTimeline()
+        {
+            return twitterComm.GetHomeTimeline();
+        }
     }
 
     public class TwitterCommunicator
@@ -37,21 +41,6 @@ namespace SharpTwitter
             tokens.AccessTokenSecret = TwitterAccountConstants.oAuthTokenSecret;
             tokens.ConsumerKey = TwitterAccountConstants.oAuthConsumerKey;
             tokens.ConsumerSecret = TwitterAccountConstants.oAuthConsumerSecret;
-
-            TwitterResponse<TwitterStatusCollection> timelineResponse = TwitterTimeline.HomeTimeline(tokens);
-            if (timelineResponse.Result == RequestResult.Success)
-            {
-                // show the timeline
-                TwitterStatusCollection statusCollection = timelineResponse.ResponseObject as TwitterStatusCollection;
-                foreach (TwitterStatus status in statusCollection)
-                {
-                    // Console.WriteLine("{0} wrote {1}", status.User.ScreenName, status.Text);
-                }
-            }
-            else
-            {
-                // excption
-            }
 
             TwitterResponse<TwitterUser> resp = TwitterUser.Show(tokens, "pangratz");
             TwitterUser twitterUser = resp.ResponseObject as TwitterUser;
@@ -75,6 +64,22 @@ namespace SharpTwitter
 
         public void DirectMessage(string user, string message)
         {
+        }
+
+        public TwitterStatusCollection GetHomeTimeline()
+        {
+            TwitterResponse<TwitterStatusCollection> timelineResponse = TwitterTimeline.HomeTimeline(tokens);
+            if (timelineResponse.Result == RequestResult.Success)
+            {
+                // show the timeline
+                return timelineResponse.ResponseObject as TwitterStatusCollection;
+            }
+            else
+            {
+                // excption
+            }
+
+            return null;
         }
 
         internal void testCredentials()
