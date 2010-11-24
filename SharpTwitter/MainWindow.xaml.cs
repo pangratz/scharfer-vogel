@@ -16,6 +16,13 @@ using System.Collections;
 
 namespace SharpTwitter
 {
+
+    public enum CurrentView
+    {
+        HOME_TIMELINE,
+        USER_TIMELINE
+    }
+
     /// <summary>
     /// Interaktionslogik für TwitterWindow.xaml
     /// </summary>
@@ -26,6 +33,8 @@ namespace SharpTwitter
         private Brush defaultForeground;
         private ICollection<TwitterStatus> tweetsList;
         private TwitterStatus replyTo = null;
+        private CurrentView currentView;
+        private string currentViewUsername;
 
         public TwitterWindow()
         {
@@ -37,6 +46,8 @@ namespace SharpTwitter
             tweetsList = new SortedSet<TwitterStatus>(new TwitterStatusComparer());
             tweetListView.ItemsSource = tweetsList;
 
+            currentView = CurrentView.HOME_TIMELINE;
+            SetTitle("Home timeline");
             TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
             SetTweets(tweets);
         }
@@ -50,16 +61,13 @@ namespace SharpTwitter
             {
                 AddTweet(status);
             }
+            tweetListView.ScrollIntoView(tweetsList.First());
         }
 
         private void AddTweet(TwitterStatus status)
         {
             tweetsList.Add(status);
             tweetListView.Items.Refresh();
-        }
-
-        void HandleUserLableDoubleClick(object sender, MouseButtonEventArgs e)
-        {
         }
 
         private void tweetMessageChanged(object sender, TextChangedEventArgs e)
@@ -116,6 +124,9 @@ namespace SharpTwitter
                 Image img = sender as Image;
                 string username = img.Tag as string;
                 Console.WriteLine("show all tweets of user {0}", username);
+                SetTitle(username + "'s timeline");
+                currentView = CurrentView.USER_TIMELINE;
+                currentViewUsername = username;
                 TwitterStatusCollection tweets = tweetApp.GetHomeTimeline(username);
                 SetTweets(tweets);
             }
@@ -135,6 +146,7 @@ namespace SharpTwitter
             }
             else if (e.ChangedButton == MouseButton.Right && e.ClickCount == 1)
             {
+                // show popup?
             }
         }
 
@@ -206,6 +218,28 @@ namespace SharpTwitter
         {
             Image image = sender as Image;
             image.Cursor = Cursors.Arrow;
+        }
+
+        private void tweetListView_KeyUp(object sender, KeyEventArgs e)
+        {
+            // check if the pressed key is the ESC key
+            if ((e.Key == Key.Escape) && (currentView == CurrentView.USER_TIMELINE))
+            {
+                TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
+                SetTweets(tweets);
+                currentView = CurrentView.HOME_TIMELINE;
+                SetTitle("Home timeline");
+            }
+        }
+
+        private void SetTitle(string newTitle)
+        {
+            string title = "SharpTwitter";
+            if (newTitle != null && newTitle.Length > 0)
+            {
+                title += " - " + newTitle;
+            }
+            this.Title = title;
         }
     }
 
