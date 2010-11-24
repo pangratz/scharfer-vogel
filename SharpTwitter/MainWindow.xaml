@@ -3,19 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SharpTwitter" Height="400" Width="300">
     <Window.Resources>
-        <!-- xmlns:wp="clr-namespace:SharpTwitter" -->
-        <!-- <wp:TweetDateCreatedConverter x:Key="TweetDateCreatedConverter" /> -->
-        <!-- Converter={StaticResource TweetDateCreatedConverter}} -->
         <DataTemplate x:Key="tweetTemplate">
-            <DockPanel Margin="0, 5, 0, 5">
-                <Image Tag="{Binding Path=User.ScreenName}" Source="{Binding User.ProfileImageLocation}" MaxWidth="32" DockPanel.Dock="Left" Margin="0,0,10,0" MouseDown="ProfileImageClick" />
-                <DockPanel DockPanel.Dock="Right" MouseDown="TweetMessageClick" Tag="{Binding}">
-                    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Path=CreatedDate}" />
-                    <TextBlock Width="Auto" DockPanel.Dock="Top">
-                        <TextBlock Text="{Binding Path=User.ScreenName}" FontWeight="Bold" />
-                        <TextBlock Text="{Binding Path=Text}" />
-                    </TextBlock>
-                </DockPanel>
+            <DockPanel Margin="0, 5, 0, 5" Name="TweetDockPanel" MouseEnter="TweetDockPanel_MouseEnter" MouseLeave="TweetDockPanel_MouseLeave" HorizontalAlignment="Stretch" >
+                <Image DockPanel.Dock="Left" VerticalAlignment="Top" Name="UserImage" Tag="{Binding Path=User.ScreenName}" Source="{Binding User.ProfileImageLocation}" MaxWidth="32" Margin="0,0,10,0" MouseDown="ProfileImageClick" />
+                <StackPanel DockPanel.Dock="Top" MouseDown="TweetMessageClick" Tag="{Binding}" VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Vertical" >
+                    <TextBlock Text="{Binding Path=User.ScreenName}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding Path=Text}" TextWrapping="WrapWithOverflow" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Path=CreatedDate}" FontStyle="Italic" FontSize="10" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <Image Name="RetweetImage" Tag="{Binding}" Source="res/retweet.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="RetweetIcon_MouseDown" Margin="0,0,10,0" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
+                    <Image Name="FavouriteStarImage" Tag="{Binding}"  Source="res/star.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="FavouriteStar_MouseDown" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
+                </StackPanel>
             </DockPanel>
         </DataTemplate>
     </Window.Resources>
@@ -31,8 +30,6 @@
         </Grid.ColumnDefinitions>
         <Label Content="140" Height="28" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" Grid.Row="2" HorizontalContentAlignment="Right" Visibility="Hidden" />
         <TextBox Name="tweetTextBox" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" Grid.Row="1" VerticalAlignment="Bottom" Margin="12,0" />
-        <!-- <ListView Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" /> -->
-        <ListBox Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemTemplate="{Binding Source={StaticResource tweetTemplate}}" Margin="0,0,0,10">
-        </ListBox>
+        <ListBox Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemTemplate="{Binding Source={StaticResource tweetTemplate}}" Margin="0,0,0,10" />
     </Grid>
 </Window>

@@ -91,7 +91,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AppConstants.cs" />
-    <Compile Include="TweetDateCreatedConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -149,6 +148,8 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="res\retweet.png" />
+    <Resource Include="res\star.png" />
     <Resource Include="lib\Twitterizer2-2.3.1\GettingStarted.txt" />
     <Resource Include="lib\Twitterizer2-2.3.1\Json.NET.license.txt" />
     <Content Include="lib\Twitterizer2-2.3.1\Newtonsoft.Json.dll" />

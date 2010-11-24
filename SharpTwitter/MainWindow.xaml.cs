@@ -123,21 +123,94 @@ namespace SharpTwitter
         {
             if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
             {
-                DockPanel panel = sender as DockPanel;
+                FrameworkElement panel = sender as FrameworkElement;
                 replyTo = panel.Tag as TwitterStatus;
 
                 string tweetText = String.Format("@{0} ", replyTo.User.ScreenName);
                 tweetTextBox.Text = tweetText;
             }
+            else if (e.ChangedButton == MouseButton.Right && e.ClickCount == 1)
+            {
+            }
+        }
+
+        private void TweetDockPanel_MouseEnter(object sender, MouseEventArgs e)
+        {
+            // set opacity of the star to 1.0
+            DockPanel dockPanel = sender as DockPanel;
+            
+            Image FavouriteStarImage = dockPanel.FindName("FavouriteStarImage") as Image;
+            FavouriteStarImage.Opacity = 1.0;
+
+            Image RetweetImage = dockPanel.FindName("RetweetImage") as Image;
+            RetweetImage.Opacity = 1.0;
+        }
+
+        private void TweetDockPanel_MouseLeave(object sender, MouseEventArgs e)
+        {
+            DockPanel dockPanel = sender as DockPanel;
+            
+            // update favorite star
+            Image FavouriteStarImage = dockPanel.FindName("FavouriteStarImage") as Image;
+            TwitterStatus status = (TwitterStatus) FavouriteStarImage.Tag;
+            bool isFavourite = (bool) status.IsFavorited;
+            FavouriteStarImage.Opacity = (isFavourite) ? 1.0 : 0.0;
+
+            // update rewteet star
+            Image RetweetImage = dockPanel.FindName("RetweetImage") as Image;
+            status = (TwitterStatus) RetweetImage.Tag;
+            bool isRetweeted = (bool)status.Retweeted;
+            RetweetImage.Opacity = (isRetweeted) ? 1.0 : 0.0;
+        }
+
+        private void FavouriteStar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // invert favourite status of this tweet
+            Image FavouriteStarImage = sender as Image;
+            TwitterStatus status = (TwitterStatus) FavouriteStarImage.Tag;
+
+            bool isFavorite = (bool) status.IsFavorited;
+            isFavorite = !isFavorite;
+
+            status.IsFavorited = isFavorite;
+            FavouriteStarImage.Tag = status;
+            tweetApp.UpdateTweetFavouriteStatus(status.Id, isFavorite);
+
+            if (isFavorite)
+                FavouriteStarImage.Opacity = 1.0;
+        }
+
+        private void RetweetIcon_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Image image = sender as Image;
+            TwitterStatus status = image.Tag as TwitterStatus;
+            status.Retweeted = true;
+            image.Tag = status;
+            image.Opacity = 1.0;
+
+            TwitterStatus retweetedStatus = tweetApp.ReTweet(status.Id);
+            AddTweet(retweetedStatus);
+        }
+
+        private void Icon_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Image image = sender as Image;
+            image.Cursor = Cursors.Hand;
+        }
+
+        private void Icon_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Image image = sender as Image;
+            image.Cursor = Cursors.Arrow;
         }
     }
 
     public class TwitterStatusComparer : IComparer<TwitterStatus>
     {
 
-        public int Compare(TwitterStatus s1, TwitterStatus s2)
+        public int Compare(TwitterStatus status1, TwitterStatus status2)
         {
-            return s2.CreatedDate.CompareTo(s1.CreatedDate);
+            return status2.CreatedDate.CompareTo(status1.CreatedDate);
         }
 
     }
