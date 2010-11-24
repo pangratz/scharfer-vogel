@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Twitterizer;
+using System.Collections;
 
 namespace SharpTwitter
 {
@@ -21,16 +22,31 @@ namespace SharpTwitter
     public partial class TwitterWindow : Window
     {
 
+        private App tweetApp;
         private Brush defaultForeground;
+        private ICollection<TwitterStatus> tweetsList;
+        private TwitterStatus replyTo = null;
 
         public TwitterWindow()
         {
             InitializeComponent();
-            defaultForeground = charactersLeftLabel.Foreground;
+            defaultForeground = charactersLeftLabel.Foreground;           
 
-            App tweetApp = (App) App.Current;
+            tweetApp = (App) App.Current;
+
+            tweetsList = new SortedSet<TwitterStatus>(new TwitterStatusComparer());
+            tweetListView.ItemsSource = tweetsList;
+
             TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
-            foreach (TwitterStatus status in tweets)
+            SetTweets(tweets);
+        }
+
+        private void SetTweets(TwitterStatusCollection tweetsCollection)
+        {
+            replyTo = null;
+            tweetTextBox.Clear();
+            tweetsList.Clear();
+            foreach (TwitterStatus status in tweetsCollection)
             {
                 AddTweet(status);
             }
@@ -38,61 +54,22 @@ namespace SharpTwitter
 
         private void AddTweet(TwitterStatus status)
         {
-            Grid g = new Grid();
-            ColumnDefinition imageColumnDef = new ColumnDefinition();
-            imageColumnDef.Width = new GridLength(32);
-            g.ColumnDefinitions.Add(imageColumnDef);
+            tweetsList.Add(status);
+            tweetListView.Items.Refresh();
+        }
 
-            ColumnDefinition tweetColumnDef = new ColumnDefinition();
-            tweetColumnDef.Width = new GridLength(200);
-            g.ColumnDefinitions.Add(tweetColumnDef);
-
-            g.RowDefinitions.Add(new RowDefinition());
-            g.RowDefinitions.Add(new RowDefinition());
-
-            // add the image of the tweeter
-            string userImageUrl = status.User.ProfileImageLocation;
-            Label userImageLabel = new Label();
-            Image userImage = new Image();
-            userImage.ToolTip = test;
-            BitmapImage bitmap = new BitmapImage(new Uri(userImageUrl));
-            userImage.Source = bitmap;
-            g.Children.Add(userImage);
-            Grid.SetRow(userImage, 0);
-            Grid.SetColumn(userImage, 0);
-            Grid.SetRowSpan(userImage, 2);
-
-            // add tweeted message
-            Label tweetLabel = new Label();
-            TextBlock tweetLabelTextBlock = new TextBlock();
-            tweetLabelTextBlock.TextWrapping = TextWrapping.Wrap;
-            tweetLabelTextBlock.Text = status.Text;
-            tweetLabel.Content = tweetLabelTextBlock;
-            g.Children.Add(tweetLabel);
-            Grid.SetRow(tweetLabel, 1);
-            Grid.SetColumn(tweetLabel, 1);
-
-            // add username
-            Label userLabel = new Label();
-            userLabel.Content = status.User.ScreenName;
-            g.Children.Add(userLabel);
-            Grid.SetRow(userLabel, 0);
-            Grid.SetColumn(userLabel, 1);
-
-            tweetListView.Items.Add(g);
+        void HandleUserLableDoubleClick(object sender, MouseButtonEventArgs e)
+        {
         }
 
         private void tweetMessageChanged(object sender, TextChangedEventArgs e)
         {
-            int length = tweetTextBox.Text.Length;
-            int charsLeft = (140 - length);
-            if (charsLeft < 0) {
-                charactersLeftLabel.Foreground = Brushes.Red;
-            } else {
-                charactersLeftLabel.Foreground = defaultForeground;
-            }
-            charactersLeftLabel.Content = charsLeft;
+            int length = tweetTextBox.Text.Length;            
+            charactersLeftLabel.Visibility = (length > 0) ? Visibility.Visible : Visibility.Hidden;
 
+            int charsLeft = (140 - length);
+            charactersLeftLabel.Foreground = (charsLeft < 0) ? Brushes.Red : defaultForeground;
+            charactersLeftLabel.Content = charsLeft;
         }
 
         private void keyPressed(object sender, KeyEventArgs e)
@@ -103,21 +80,65 @@ namespace SharpTwitter
                 e.Handled = true;
 
                 string tweetMessage = tweetTextBox.Text;
-                if (tweetMessage.Length == 0 || tweetMessage.Length > 140) {
+                if (tweetMessage.Length == 0 || tweetMessage.Length > 140)
+                {
                     // invalid tweet length
                     return;
                 }
 
                 // tweet the entered message
-                App tweetApp = App.Current as App;
-                tweetApp.Tweet(tweetMessage);
+                TwitterStatus status;
+                if (replyTo != null)
+                    status = tweetApp.ReplyToTweet(replyTo.Id, tweetMessage);
+                else
+                    status = tweetApp.Tweet(tweetMessage);
 
-                tweetTextBox.Clear();
+                if (status != null)
+                {
+                    AddTweet(status);
+                    tweetTextBox.Clear();
+                    replyTo = null;
+                }
             }
             else if (e.Key == Key.Escape) {
                 e.Handled = true;
                 tweetTextBox.Clear();
+                replyTo = null;
             }
         }
+
+        private void ProfileImageClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
+            {
+                Image img = sender as Image;
+                string username = img.Tag as string;
+                Console.WriteLine("show all tweets of user {0}", username);
+                TwitterStatusCollection tweets = tweetApp.GetHomeTimeline(username);
+                SetTweets(tweets);
+            }
+        }
+
+        private void TweetMessageClick(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
+            {
+                DockPanel panel = sender as DockPanel;
+                replyTo = panel.Tag as TwitterStatus;
+
+                string tweetText = String.Format("@{0} ", replyTo.User.ScreenName);
+                tweetTextBox.Text = tweetText;
+            }
+        }
+    }
+
+    public class TwitterStatusComparer : IComparer<TwitterStatus>
+    {
+
+        public int Compare(TwitterStatus s1, TwitterStatus s2)
+        {
+            return s2.CreatedDate.CompareTo(s1.CreatedDate);
+        }
+
     }
 }

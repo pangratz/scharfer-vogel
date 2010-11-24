@@ -4,6 +4,7 @@ using System.Xml;
 using System.Net;
 using Twitterizer;
 using System.Configuration;
+using System.Diagnostics;
 
 namespace SharpTwitter
 {
@@ -20,13 +21,28 @@ namespace SharpTwitter
             twitterComm.testCredentials();
         }
 
-        public void Tweet(string message) {
-            twitterComm.Tweet(message);
+        public TwitterStatus Tweet(string message) {
+            return twitterComm.Tweet(message);
+        }
+
+        public TwitterStatus ReTweet(decimal retweetId)
+        {
+            return twitterComm.ReTweet(retweetId);
+        }
+
+        public TwitterStatus ReplyToTweet(decimal replyTweetId, string message)
+        {
+            return twitterComm.ReplyToTweet(replyTweetId, message);
         }
 
         public TwitterStatusCollection GetHomeTimeline()
         {
-            return twitterComm.GetHomeTimeline();
+            return twitterComm.GetHomeTimeline(null);
+        }
+
+        internal TwitterStatusCollection GetHomeTimeline(string username)
+        {
+            return twitterComm.GetHomeTimeline(username);
         }
     }
 
@@ -48,17 +64,24 @@ namespace SharpTwitter
             Console.WriteLine("description: {0}", desc);
         }
 
-        public void Tweet(string message)
+        public TwitterStatus Tweet(string message)
         {
             Console.WriteLine("Sending Tweet: {0}", message);
             TwitterResponse<TwitterStatus> statusResponse = TwitterStatus.Update(tokens, message);
+            return HandleTwitterResponse(statusResponse);
+        }
+
+        private TwitterStatus HandleTwitterResponse(TwitterResponse<TwitterStatus> statusResponse)
+        {
             if (statusResponse.Result == RequestResult.Success)
             {
-                Console.WriteLine("Successfull Tweet");
+                Console.WriteLine("Successfull");
+                return statusResponse.ResponseObject as TwitterStatus;
             }
             else
             {
                 Console.WriteLine("error: {0}", statusResponse.ErrorMessage);
+                return null;
             }
         }
 
@@ -66,13 +89,23 @@ namespace SharpTwitter
         {
         }
 
-        public TwitterStatusCollection GetHomeTimeline()
+        public TwitterStatusCollection GetHomeTimeline(string username)
         {
-            TwitterResponse<TwitterStatusCollection> timelineResponse = TwitterTimeline.HomeTimeline(tokens);
-            if (timelineResponse.Result == RequestResult.Success)
+            TwitterResponse<TwitterStatusCollection> response;
+            if (username != null)
+            {
+                UserTimelineOptions opts = new UserTimelineOptions();
+                opts.ScreenName = username;
+                response = TwitterTimeline.UserTimeline(tokens, opts);
+            } else
+            {
+                response = TwitterTimeline.HomeTimeline(tokens);
+            }
+
+            if (response.Result == RequestResult.Success)
             {
                 // show the timeline
-                return timelineResponse.ResponseObject as TwitterStatusCollection;
+                return response.ResponseObject as TwitterStatusCollection;
             }
             else
             {
@@ -89,6 +122,22 @@ namespace SharpTwitter
             {
                 throw new ApplicationException(verifyCredentialsRes.ErrorMessage);
             }
+        }
+
+        internal TwitterStatus ReTweet(decimal replyTweetId)
+        {
+            Console.WriteLine("ReTweeting Tweet: {0}", replyTweetId);
+            TwitterResponse<TwitterStatus> statusResponse = TwitterStatus.Retweet(tokens, replyTweetId);
+            return HandleTwitterResponse(statusResponse);
+        }
+
+        internal TwitterStatus ReplyToTweet(decimal replyTweetId, string message)
+        {
+            Console.WriteLine("Replying to Tweet {0} with message {1}", replyTweetId, message);
+            StatusUpdateOptions opts = new StatusUpdateOptions();
+            opts.InReplyToStatusId = replyTweetId;
+            TwitterResponse<TwitterStatus> response = TwitterStatus.Update(tokens, message, opts);
+            return HandleTwitterResponse(response);
         }
     }
 
