@@ -19,18 +19,24 @@
         </DataTemplate>
     </Window.Resources>
     
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="{Binding ElementName=tweetTextBox, Path=Height}" />
-            <RowDefinition MaxHeight="{Binding ElementName=charactersLeftLabel, Path=ActualHeight}" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Label Content="140" Height="28" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" Grid.Row="2" HorizontalContentAlignment="Right" Visibility="Hidden" Width="30" HorizontalAlignment="Right" Margin="0,0,0,0" />
-        <TextBox Name="tweetTextBox" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" Grid.Row="1" VerticalAlignment="Bottom" Margin="12,0" />
-        <ListBox Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemTemplate="{Binding Source={StaticResource tweetTemplate}}" Margin="0,0,0,10" KeyUp="tweetListView_KeyUp" />
-        <Label Content="" Grid.Row="2" Height="28" HorizontalAlignment="Stretch" Margin="12,0,30,0" Name="ReplyToLabel" VerticalAlignment="Top" />
-    </Grid>
+    <DockPanel>
+
+        <Label Name="StatusLabel" DockPanel.Dock="Bottom" Height="30" />
+
+        <Grid DockPanel.Dock="Top" >
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="{Binding ElementName=tweetTextBox, Path=Height}" />
+                <RowDefinition MaxHeight="{Binding ElementName=charactersLeftLabel, Path=ActualHeight}" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Content="140" Height="28" Name="charactersLeftLabel" FontSize="8" IsEnabled="True" VerticalAlignment="Bottom" Grid.Row="2" HorizontalContentAlignment="Right" Visibility="Hidden" Width="30" HorizontalAlignment="Right" Margin="0,0,0,0" />
+            <TextBox Name="tweetTextBox" TextChanged="tweetMessageChanged" TextWrapping="Wrap" AcceptsReturn="True" PreviewKeyDown="keyPressed" Grid.Row="1" VerticalAlignment="Bottom" Margin="12,0" />
+            <ListBox Name="tweetListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemTemplate="{Binding Source={StaticResource tweetTemplate}}" Margin="0,0,0,10" KeyUp="tweetListView_KeyUp" VerticalContentAlignment="Stretch" />
+            <Label Content="" Grid.Row="2" Height="28" HorizontalAlignment="Stretch" Margin="12,0,30,0" Name="ReplyToLabel" VerticalAlignment="Top" />
+        </Grid>
+
+    </DockPanel>
 </Window>

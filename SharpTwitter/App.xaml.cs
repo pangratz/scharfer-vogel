@@ -42,9 +42,19 @@ namespace SharpTwitter
             return GetHomeTimeline(null);
         }
 
+        public TwitterStatusCollection GetHomeTimeline(decimal lastStatusId)
+        {
+            return GetHomeTimeline(null, lastStatusId);
+        }
+
         public TwitterStatusCollection GetHomeTimeline(string username)
         {
-            return twitterComm.GetHomeTimeline(username);
+            return GetHomeTimeline(username, Decimal.MinusOne);
+        }
+
+        public TwitterStatusCollection GetHomeTimeline(string username, decimal lastStatusId)
+        {
+            return twitterComm.GetHomeTimeline(username, lastStatusId);
         }
 
         public void UpdateTweetFavouriteStatus(decimal tweetId, bool isFavorite)
@@ -65,11 +75,6 @@ namespace SharpTwitter
             tokens.AccessTokenSecret = TwitterAccountConstants.oAuthTokenSecret;
             tokens.ConsumerKey = TwitterAccountConstants.oAuthConsumerKey;
             tokens.ConsumerSecret = TwitterAccountConstants.oAuthConsumerSecret;
-
-            TwitterResponse<TwitterUser> resp = TwitterUser.Show(tokens, "pangratz");
-            TwitterUser twitterUser = resp.ResponseObject as TwitterUser;
-            string desc = twitterUser.Description;
-            Console.WriteLine("description: {0}", desc);
         }
 
         public TwitterStatus Tweet(string message)
@@ -93,21 +98,23 @@ namespace SharpTwitter
             }
         }
 
-        public void DirectMessage(string user, string message)
-        {
-        }
-
-        public TwitterStatusCollection GetHomeTimeline(string username)
+        public TwitterStatusCollection GetHomeTimeline(string username, decimal lastStatusId)
         {
             TwitterResponse<TwitterStatusCollection> response;
             if (username != null)
             {
                 UserTimelineOptions opts = new UserTimelineOptions();
+                if (lastStatusId > 0)
+                    opts.SinceStatusId = lastStatusId;
                 opts.ScreenName = username;
                 response = TwitterTimeline.UserTimeline(tokens, opts);
             } else
             {
-                response = TwitterTimeline.HomeTimeline(tokens);
+                TimelineOptions opts = new TimelineOptions();
+                if (lastStatusId > 0)
+                    opts.SinceStatusId = lastStatusId;
+
+                response = TwitterTimeline.HomeTimeline(tokens, opts);
             }
 
             if (response.Result == RequestResult.Success)

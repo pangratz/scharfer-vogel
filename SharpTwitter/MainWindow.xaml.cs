@@ -35,6 +35,7 @@ namespace SharpTwitter
         private TwitterStatus replyTo = null;
         private CurrentView currentView;
         private string currentViewUsername;
+        private decimal lastStatusId;
 
         public TwitterWindow()
         {
@@ -47,13 +48,17 @@ namespace SharpTwitter
             tweetListView.ItemsSource = tweetsList;
 
             currentView = CurrentView.HOME_TIMELINE;
-            SetTitle("Home timeline");
+            UpdateTitle();
+
+            SetStatus("Loading Tweets for home timeline");
             TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
             SetTweets(tweets);
+            SetStatus("Tweets loaded");
         }
 
         private void SetTweets(TwitterStatusCollection tweetsCollection)
         {
+            lastStatusId = Decimal.Zero;
             replyTo = null;
             tweetTextBox.Clear();
             tweetsList.Clear();
@@ -66,6 +71,15 @@ namespace SharpTwitter
 
         private void AddTweet(TwitterStatus status)
         {
+            if (status == null)
+            {
+                Console.WriteLine("FAILURE: status is null!!");
+                return;
+            }
+
+            if (status.Id > lastStatusId)
+                lastStatusId = status.Id;
+
             tweetsList.Add(status);
             tweetListView.Items.Refresh();
         }
@@ -97,9 +111,17 @@ namespace SharpTwitter
                 // tweet the entered message
                 TwitterStatus status;
                 if (replyTo != null)
+                {
+                    SetStatus("Sending reply to tweet");
                     status = tweetApp.ReplyToTweet(replyTo.Id, tweetMessage);
+                    SetStatus("Reply sent");
+                }
                 else
+                {
+                    SetStatus("Sending tweet");
                     status = tweetApp.Tweet(tweetMessage);
+                    SetStatus("Tweet sent");
+                }
 
                 if (status != null)
                 {
@@ -123,12 +145,14 @@ namespace SharpTwitter
             {
                 Image img = sender as Image;
                 string username = img.Tag as string;
-                Console.WriteLine("show all tweets of user {0}", username);
-                SetTitle(username + "'s timeline");
                 currentView = CurrentView.USER_TIMELINE;
                 currentViewUsername = username;
+                UpdateTitle();
+
+                SetStatus("Loading all tweets for user " + username);
                 TwitterStatusCollection tweets = tweetApp.GetHomeTimeline(username);
                 SetTweets(tweets);
+                SetStatus("Tweets loaded");
             }
         }
 
@@ -190,7 +214,16 @@ namespace SharpTwitter
 
             status.IsFavorited = isFavorite;
             FavouriteStarImage.Tag = status;
+
+            if (isFavorite)
+                SetStatus("Adding Tweet to favorites");
+            else
+                SetStatus("Removing Tweet from favorites");
             tweetApp.UpdateTweetFavouriteStatus(status.Id, isFavorite);
+            if (isFavorite)
+                SetStatus("Tweet added to favorites");
+            else
+                SetStatus("Tweet removed from favorites");
 
             if (isFavorite)
                 FavouriteStarImage.Opacity = 1.0;
@@ -204,8 +237,10 @@ namespace SharpTwitter
             image.Tag = status;
             image.Opacity = 1.0;
 
+            SetStatus("Sending ReTweet");
             TwitterStatus retweetedStatus = tweetApp.ReTweet(status.Id);
             AddTweet(retweetedStatus);
+            SetStatus("ReTweet sent");
         }
 
         private void Icon_MouseEnter(object sender, MouseEventArgs e)
@@ -220,27 +255,66 @@ namespace SharpTwitter
             image.Cursor = Cursors.Arrow;
         }
 
+        private void UpdateTitle()
+        {
+            switch (currentView) {
+                case CurrentView.HOME_TIMELINE:
+                    SetTitle("Home timeline");
+                    break;
+                case CurrentView.USER_TIMELINE:
+                    SetTitle(currentViewUsername + "'s timeline (ESC to get back)");
+                    break;
+            }
+        }
+
         private void tweetListView_KeyUp(object sender, KeyEventArgs e)
         {
             // check if the pressed key is the ESC key
             if ((e.Key == Key.Escape) && (currentView == CurrentView.USER_TIMELINE))
             {
+                currentView = CurrentView.HOME_TIMELINE;
+                UpdateTitle();
+
+                SetStatus("Loading Tweets for home timeline");
                 TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
                 SetTweets(tweets);
-                currentView = CurrentView.HOME_TIMELINE;
-                SetTitle("Home timeline");
+                SetStatus("Tweets loaded");
+            }
+            else if (e.Key == Key.R) {
+                // refresh the timeline
+                TwitterStatusCollection newTweets = new TwitterStatusCollection();
+                switch (currentView) {
+                    case CurrentView.HOME_TIMELINE:
+                        newTweets = tweetApp.GetHomeTimeline(lastStatusId);
+                        break;
+                    case CurrentView.USER_TIMELINE:
+                        newTweets = tweetApp.GetHomeTimeline(currentViewUsername, lastStatusId);
+                        break;
+                }
+
+                foreach (TwitterStatus status in newTweets)
+                {
+                    AddTweet(status);
+                }
             }
         }
 
         private void SetTitle(string newTitle)
         {
+            // string title = "SharpTwitter";
             string title = "SharpTwitter";
             if (newTitle != null && newTitle.Length > 0)
             {
-                title += " - " + newTitle;
+                title = newTitle;
             }
             this.Title = title;
         }
+
+        private void SetStatus(string status)
+        {
+            StatusLabel.Content = status;
+        }
+
     }
 
     public class TwitterStatusComparer : IComparer<TwitterStatus>
