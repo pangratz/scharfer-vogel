@@ -98,12 +98,14 @@ namespace SharpTwitter
                     AddTweet(status);
                     tweetTextBox.Clear();
                     replyTo = null;
+                    ReplyToLabel.Content = "";
                 }
             }
             else if (e.Key == Key.Escape) {
                 e.Handled = true;
                 tweetTextBox.Clear();
                 replyTo = null;
+                ReplyToLabel.Content = "";
             }
         }
 
@@ -128,6 +130,8 @@ namespace SharpTwitter
 
                 string tweetText = String.Format("@{0} ", replyTo.User.ScreenName);
                 tweetTextBox.Text = tweetText;
+                string replyToStr = String.Format("In reply to: {0} - {1}", replyTo.User.ScreenName, replyTo.Text);
+                ReplyToLabel.Content = replyToStr;
             }
             else if (e.ChangedButton == MouseButton.Right && e.ClickCount == 1)
             {
