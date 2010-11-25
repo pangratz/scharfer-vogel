@@ -75,6 +75,21 @@ namespace SharpTwitter
             tokens.AccessTokenSecret = TwitterAccountConstants.oAuthTokenSecret;
             tokens.ConsumerKey = TwitterAccountConstants.oAuthConsumerKey;
             tokens.ConsumerSecret = TwitterAccountConstants.oAuthConsumerSecret;
+
+            OAuthTokenResponse requestToken = OAuthUtility.GetRequestToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, "oob");
+            // Direct or instruct the user to the following address:
+            Uri authorizationUri = OAuthUtility.BuildAuthorizationUri(requestToken.Token);
+            Console.WriteLine("goto url {0}", authorizationUri);
+            string pin = "1234567";
+
+
+            // TODO create login prompt where the user shall enter the PIN
+            // TODO store the pin in a file
+
+            // OAuthTokenResponse response = OAuthUtility.GetAccessToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, requestToken.Token, pin);
+
+            // tokens.AccessToken = response.Token;
+            // tokens.AccessTokenSecret = response.TokenSecret;
         }
 
         public TwitterStatus Tweet(string message)

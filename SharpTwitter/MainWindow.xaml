@@ -20,6 +20,16 @@
     </Window.Resources>
     
     <DockPanel>
+        
+        <Menu DockPanel.Dock="Top" Height="22" >
+            <MenuItem Header="File">
+                <MenuItem Header="_Connect"></MenuItem>
+                <MenuItem Header="_Exit"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Refresh"></MenuItem>
+            </MenuItem>
+        </Menu>
 
         <Label Name="StatusLabel" DockPanel.Dock="Bottom" Height="30" />
 
