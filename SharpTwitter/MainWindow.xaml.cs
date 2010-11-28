@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Twitterizer;
 using System.Collections;
+using System.Globalization;
 
 namespace SharpTwitter
 {
@@ -50,10 +51,13 @@ namespace SharpTwitter
             currentView = CurrentView.HOME_TIMELINE;
             UpdateTitle();
 
-            SetStatus("Loading Tweets for home timeline");
-            TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
-            SetTweets(tweets);
-            SetStatus("Tweets loaded");
+            if (tweetApp.IsConnected())
+            {
+                SetStatus("Loading Tweets for home timeline");
+                TwitterStatusCollection tweets = tweetApp.GetHomeTimeline();
+                SetTweets(tweets);
+                SetStatus("Tweets loaded");
+            }
         }
 
         private void SetTweets(TwitterStatusCollection tweetsCollection)
@@ -281,21 +285,27 @@ namespace SharpTwitter
                 SetStatus("Tweets loaded");
             }
             else if (e.Key == Key.R) {
-                // refresh the timeline
-                TwitterStatusCollection newTweets = new TwitterStatusCollection();
-                switch (currentView) {
-                    case CurrentView.HOME_TIMELINE:
-                        newTweets = tweetApp.GetHomeTimeline(lastStatusId);
-                        break;
-                    case CurrentView.USER_TIMELINE:
-                        newTweets = tweetApp.GetHomeTimeline(currentViewUsername, lastStatusId);
-                        break;
-                }
+                RefreshTimeline();
+            }
+        }
 
-                foreach (TwitterStatus status in newTweets)
-                {
-                    AddTweet(status);
-                }
+        private void RefreshTimeline()
+        {
+            // refresh the timeline
+            TwitterStatusCollection newTweets = new TwitterStatusCollection();
+            switch (currentView)
+            {
+                case CurrentView.HOME_TIMELINE:
+                    newTweets = tweetApp.GetHomeTimeline(lastStatusId);
+                    break;
+                case CurrentView.USER_TIMELINE:
+                    newTweets = tweetApp.GetHomeTimeline(currentViewUsername, lastStatusId);
+                    break;
+            }
+
+            foreach (TwitterStatus status in newTweets)
+            {
+                AddTweet(status);
             }
         }
 
@@ -315,6 +325,66 @@ namespace SharpTwitter
             StatusLabel.Content = status;
         }
 
+        private void Connect_MenuItem_Clicked(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Connect menu item clicked --> show dialog");
+
+            tweetApp.StartNewAuthorization();
+            string uri = tweetApp.GetTwitterLoginUrl();
+            ConnectDialog cd = new ConnectDialog(uri);
+            cd.ShowDialog();
+            string pin = cd.GetPinCode();
+            if (pin != null)
+            {
+                tweetApp.FinishAuthorization(pin);
+                RefreshTimeline();
+            }
+            else
+            {
+                tweetApp.CancelAuthorization();
+            }
+        }
+
+        private void Exit_MenuItem_Clicked(object sender, RoutedEventArgs e)
+        {
+            // close application
+            Close();
+        }
+
+        private void Refresh_MenuItem_Clicked(object sender, RoutedEventArgs e)
+        {
+            // refresh timeline
+            RefreshTimeline();
+        }
+
+    }
+
+    public class TweetDateCreatedConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Console.WriteLine("Converting {0} to type {1}", value, targetType.GetType());
+
+            DateTime dateTime = (DateTime)value;
+            TimeSpan t = (DateTime.UtcNow - dateTime.ToUniversalTime());
+
+            if (t.TotalSeconds < 60)
+                return string.Format("{0:0} seconds ago", t.TotalSeconds);
+            else if (t.TotalMinutes < 60)
+                return string.Format("{0:0} minutes ago", t.TotalMinutes);
+            else if (t.TotalHours < 24)
+                return string.Format("{0:0} hours ago", t.TotalHours);
+            else if (t.TotalDays < 30)
+                return string.Format("{0:0} days ago", t.TotalDays);
+
+            return dateTime.ToString("d.M.yyyy, H:mm");
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Console.WriteLine("Converting back {0} to type {1}", value, targetType.GetType());
+            return value;
+        }
     }
 
     public class TwitterStatusComparer : IComparer<TwitterStatus>

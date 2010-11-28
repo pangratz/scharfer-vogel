@@ -23,11 +23,9 @@
         
         <Menu DockPanel.Dock="Top" Height="22" >
             <MenuItem Header="File">
-                <MenuItem Header="_Connect"></MenuItem>
-                <MenuItem Header="_Exit"></MenuItem>
-            </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="_Refresh"></MenuItem>
+                <MenuItem Header="_Connect" Click="Connect_MenuItem_Clicked" ></MenuItem>
+                <MenuItem Header="_Refresh" Click="Refresh_MenuItem_Clicked" ></MenuItem>
+                <MenuItem Header="_Exit" Click="Exit_MenuItem_Clicked"></MenuItem>
             </MenuItem>
         </Menu>
 

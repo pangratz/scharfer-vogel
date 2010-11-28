@@ -1,0 +1,11 @@
+﻿<Window x:Class="SharpTwitter.ConnectDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ConnectDialog" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="166" Width="300">
+    <Grid>
+        <Button Content="Connect" Height="23" HorizontalAlignment="Left" Name="connectButton" VerticalAlignment="Top" Width="75" Click="connectClicked" Margin="191,87,0,0" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="49,58,0,0" Name="pinTextBox" VerticalAlignment="Top" Width="217" />
+        <TextBlock HorizontalAlignment="Left" Margin="12,12,0,0" Name="infoLabel" VerticalAlignment="Top" Width="254" Height="46" TextWrapping="Wrap" >Please go to the url and enter the shown PIN into the field bellow: <Hyperlink Name="twitterLoginUrl" NavigateUri="http://google.com" RequestNavigate="twitterLoginUrlClicked" >Login to Twitter</Hyperlink> </TextBlock>
+        <Label Content="PIN:" Height="28" HorizontalAlignment="Left" Margin="12,58,0,0" Name="label2" VerticalAlignment="Top" />
+    </Grid>
+</Window>

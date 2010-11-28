@@ -19,8 +19,17 @@ namespace SharpTwitter
         private TwitterCommunicator twitterComm;
 
         public App() : base() {
-            twitterComm = new TwitterCommunicator();
-            twitterComm.testCredentials();
+
+            // read the account tokens & secret from properties
+            string token = SharpTwitter.Properties.Settings.Default.token;
+            string tokenSecret = SharpTwitter.Properties.Settings.Default.tokenSecret;
+
+            twitterComm = new TwitterCommunicator(token, tokenSecret);
+        }
+
+        public bool IsConnected()
+        {
+            return twitterComm.testCredentials();
         }
 
         public TwitterStatus Tweet(string message) {
@@ -62,34 +71,51 @@ namespace SharpTwitter
             twitterComm.UpdateTweetFavouriteStatus(tweetId, isFavorite);
         }
 
+
+        public string GetTwitterLoginUrl()
+        {
+            return twitterComm.GetTwitterLoginUrl();
+        }
+
+        public void StartNewAuthorization()
+        {
+            twitterComm.StartNewAuthorization();
+        }
+
+        public void FinishAuthorization(string pin)
+        {
+            string accessToken, accessTokenSecret;
+            twitterComm.FinishAuthorization(pin, out accessToken, out accessTokenSecret);
+
+            // save default values
+            SharpTwitter.Properties.Settings.Default.token = accessToken;
+            SharpTwitter.Properties.Settings.Default.tokenSecret = accessTokenSecret;
+            SharpTwitter.Properties.Settings.Default.Save();
+        }
+
+        internal void CancelAuthorization()
+        {
+            twitterComm.CancelAuthorization();
+        }
     }
 
     public class TwitterCommunicator
     {
+
+        private OAuthTokenResponse currentRequestToken;
         private OAuthTokens tokens;
 
-        public TwitterCommunicator()
+        public TwitterCommunicator(string token, string tokenSecret)
         {
             tokens = new OAuthTokens();
-            tokens.AccessToken = TwitterAccountConstants.oAuthToken;
-            tokens.AccessTokenSecret = TwitterAccountConstants.oAuthTokenSecret;
             tokens.ConsumerKey = TwitterAccountConstants.oAuthConsumerKey;
             tokens.ConsumerSecret = TwitterAccountConstants.oAuthConsumerSecret;
 
-            OAuthTokenResponse requestToken = OAuthUtility.GetRequestToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, "oob");
-            // Direct or instruct the user to the following address:
-            Uri authorizationUri = OAuthUtility.BuildAuthorizationUri(requestToken.Token);
-            Console.WriteLine("goto url {0}", authorizationUri);
-            string pin = "1234567";
-
-
-            // TODO create login prompt where the user shall enter the PIN
-            // TODO store the pin in a file
-
-            // OAuthTokenResponse response = OAuthUtility.GetAccessToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, requestToken.Token, pin);
-
-            // tokens.AccessToken = response.Token;
-            // tokens.AccessTokenSecret = response.TokenSecret;
+            if (token != null && tokenSecret != null)
+            {
+                tokens.AccessToken = token;
+                tokens.AccessTokenSecret = tokenSecret;
+            }
         }
 
         public TwitterStatus Tweet(string message)
@@ -139,19 +165,25 @@ namespace SharpTwitter
             }
             else
             {
-                // excption
+                // exception
             }
 
             return null;
         }
 
-        internal void testCredentials()
+        internal bool testCredentials()
         {
-            TwitterResponse<TwitterUser> verifyCredentialsRes = TwitterAccount.VerifyCredentials(tokens);
-            if (verifyCredentialsRes.Result != RequestResult.Success)
+            try
             {
-                throw new ApplicationException(verifyCredentialsRes.ErrorMessage);
+                TwitterResponse<TwitterUser> verifyCredentialsRes = TwitterAccount.VerifyCredentials(tokens);
+                if (verifyCredentialsRes.Result == RequestResult.Success)
+                {
+                    return true;
+                }
+            } catch (Exception) {
             }
+
+            return false;
         }
 
         internal TwitterStatus ReTweet(decimal replyTweetId)
@@ -177,33 +209,39 @@ namespace SharpTwitter
             TwitterResponse<TwitterStatus> response = TwitterStatus.Update(tokens, message, opts);
             return HandleTwitterResponse(response);
         }
-    }
 
-    class TweetDateCreatedConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        internal string GetTwitterLoginUrl()
         {
-            Console.WriteLine("Converting {0} to type {1}", value, targetType.GetType());
+            if (currentRequestToken != null)
+            {
+                Uri authorizationUri = OAuthUtility.BuildAuthorizationUri(currentRequestToken.Token);
+                return authorizationUri.ToString();
+            }
 
-            DateTime dateTime = (DateTime)value;
-            TimeSpan t = (DateTime.UtcNow - dateTime.ToUniversalTime());
-
-            if (t.TotalSeconds < 60)
-                return string.Format("{0:0} seconds ago", t.TotalSeconds);
-            else if (t.TotalMinutes < 60)
-                return string.Format("{0:0} minutes ago", t.TotalMinutes);
-            else if (t.TotalHours < 24)
-                return string.Format("{0:0} hours ago", t.TotalHours);
-            else if (t.TotalDays < 30)
-                return string.Format("{0:0} days ago", t.TotalDays);
-
-            return dateTime.ToString("d.M.yyyy, H:mm");
+            throw new InvalidOperationException("Call StartNewAuthorization first!");
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        internal void StartNewAuthorization()
         {
-            Console.WriteLine("Converting back {0} to type {1}", value, targetType.GetType());
-            return value;
+            currentRequestToken = OAuthUtility.GetRequestToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, "oob");
+        }
+
+        internal void FinishAuthorization(string pin, out string AccessToken, out string AccessTokenSecret)
+        {
+            OAuthTokenResponse response = OAuthUtility.GetAccessToken(TwitterAccountConstants.oAuthConsumerKey, TwitterAccountConstants.oAuthConsumerSecret, currentRequestToken.Token, pin);
+            
+            AccessToken = response.Token;
+            AccessTokenSecret = response.TokenSecret;
+
+            tokens.AccessToken = AccessToken;
+            tokens.AccessTokenSecret = AccessTokenSecret;
+
+            currentRequestToken = null;
+        }
+
+        internal void CancelAuthorization()
+        {
+            currentRequestToken = null;
         }
     }
 
