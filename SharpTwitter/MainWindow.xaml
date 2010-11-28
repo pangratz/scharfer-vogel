@@ -12,8 +12,8 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock DockPanel.Dock="Bottom" Text="{Binding Path=CreatedDate}" FontStyle="Italic" FontSize="10" Foreground="Gray" VerticalAlignment="Center" Margin="0,0,10,0" />
-                    <Image Name="RetweetImage" Tag="{Binding}" Source="res/retweet.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="RetweetIcon_MouseDown" Margin="0,0,10,0" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
-                    <Image Name="FavouriteStarImage" Tag="{Binding}"  Source="res/star.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="FavouriteStar_MouseDown" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
+                    <Image Name="RetweetImage" ToolTip="Retweet" Tag="{Binding}" Source="res/retweet.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="RetweetIcon_MouseDown" Margin="0,0,10,0" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
+                    <Image Name="FavouriteStarImage" ToolTip="Mark as Favorite" Tag="{Binding}"  Source="res/star.png" Width="15" Height="15" VerticalAlignment="Center" MouseDown="FavouriteStar_MouseDown" Opacity="0.0" MouseEnter="Icon_MouseEnter" MouseLeave="Icon_MouseLeave" />
                 </StackPanel>
             </DockPanel>
         </DataTemplate>
