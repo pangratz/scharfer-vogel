@@ -1,7 +1,7 @@
 ﻿<Window x:Class="SharpTwitter.TwitterWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SharpTwitter" Height="400" Width="300">
+        Title="SharpTwitter" Height="400" Width="300" Icon="/SharpTwitter;component/res/twitter_newbird_boxed_whiteonblue.png">
     <Window.Resources>
         <DataTemplate x:Key="tweetTemplate">
             <DockPanel Margin="0, 5, 0, 5" Name="TweetDockPanel" MouseEnter="TweetDockPanel_MouseEnter" MouseLeave="TweetDockPanel_MouseLeave" HorizontalAlignment="Stretch" >
