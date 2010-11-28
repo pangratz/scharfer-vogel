@@ -334,7 +334,7 @@ namespace SharpTwitter
             ConnectDialog cd = new ConnectDialog(uri);
             cd.ShowDialog();
             string pin = cd.GetPinCode();
-            if (pin != null)
+            if (pin != null && pin.Length > 0)
             {
                 tweetApp.FinishAuthorization(pin);
                 RefreshTimeline();

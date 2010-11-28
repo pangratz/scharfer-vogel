@@ -29,7 +29,7 @@ namespace SharpTwitter
 
         public bool IsConnected()
         {
-            return twitterComm.testCredentials();
+            return twitterComm.TestCredentials();
         }
 
         public TwitterStatus Tweet(string message) {
@@ -171,7 +171,7 @@ namespace SharpTwitter
             return null;
         }
 
-        internal bool testCredentials()
+        internal bool TestCredentials()
         {
             try
             {
