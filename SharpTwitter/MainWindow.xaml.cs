@@ -359,7 +359,8 @@ namespace SharpTwitter
 
     }
 
-    public class TweetDateCreatedConverter : IValueConverter
+    [ValueConversion(typeof(DateTime), typeof(String))]
+    public class DateTimeToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
