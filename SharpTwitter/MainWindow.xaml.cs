@@ -133,6 +133,7 @@ namespace SharpTwitter
                     tweetTextBox.Clear();
                     replyTo = null;
                     ReplyToLabel.Content = "";
+                    ReplyToLabel.ToolTip = "";
                 }
             }
             else if (e.Key == Key.Escape) {
@@ -189,6 +190,7 @@ namespace SharpTwitter
             tweetTextBox.Text = tweetText;
             string replyToStr = String.Format("In reply to: {0} - {1}", replyToStatus.User.ScreenName, replyToStatus.Text);
             ReplyToLabel.Content = replyToStr;
+            ReplyToLabel.ToolTip = replyToStr;
         }
 
         private void TweetDockPanel_MouseEnter(object sender, MouseEventArgs e)
