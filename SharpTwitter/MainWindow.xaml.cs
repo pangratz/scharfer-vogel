@@ -149,6 +149,15 @@ namespace SharpTwitter
             {
                 Image img = sender as Image;
                 string username = img.Tag as string;
+                ShowUserTimeline(username);
+            }
+        }
+
+        private void ShowUserTimeline(string username)
+        {
+            bool isSameUser = (currentViewUsername != null) && (currentViewUsername.Equals(username));
+            if (currentView != CurrentView.USER_TIMELINE && !isSameUser)
+            {
                 currentView = CurrentView.USER_TIMELINE;
                 currentViewUsername = username;
                 UpdateTitle();
@@ -157,6 +166,9 @@ namespace SharpTwitter
                 TwitterStatusCollection tweets = tweetApp.GetHomeTimeline(username);
                 SetTweets(tweets);
                 SetStatus("Tweets loaded");
+            }
+            else {
+                RefreshTimeline();
             }
         }
 
@@ -167,15 +179,16 @@ namespace SharpTwitter
                 FrameworkElement panel = sender as FrameworkElement;
                 replyTo = panel.Tag as TwitterStatus;
 
-                string tweetText = String.Format("@{0} ", replyTo.User.ScreenName);
-                tweetTextBox.Text = tweetText;
-                string replyToStr = String.Format("In reply to: {0} - {1}", replyTo.User.ScreenName, replyTo.Text);
-                ReplyToLabel.Content = replyToStr;
+                ReplyToTweet(replyTo);
             }
-            else if (e.ChangedButton == MouseButton.Right && e.ClickCount == 1)
-            {
-                // show popup?
-            }
+        }
+
+        private void ReplyToTweet(TwitterStatus replyToStatus)
+        {
+            string tweetText = String.Format("@{0} ", replyToStatus.User.ScreenName);
+            tweetTextBox.Text = tweetText;
+            string replyToStr = String.Format("In reply to: {0} - {1}", replyToStatus.User.ScreenName, replyToStatus.Text);
+            ReplyToLabel.Content = replyToStr;
         }
 
         private void TweetDockPanel_MouseEnter(object sender, MouseEventArgs e)
@@ -276,6 +289,17 @@ namespace SharpTwitter
             // check if the pressed key is the ESC key
             if ((e.Key == Key.Escape) && (currentView == CurrentView.USER_TIMELINE))
             {
+                ShowHomeTimeline();
+            }
+            else if (e.Key == Key.R) {
+                RefreshTimeline();
+            }
+        }
+
+        private void ShowHomeTimeline()
+        {
+            if (currentView != CurrentView.HOME_TIMELINE)
+            {
                 currentView = CurrentView.HOME_TIMELINE;
                 UpdateTitle();
 
@@ -284,7 +308,8 @@ namespace SharpTwitter
                 SetTweets(tweets);
                 SetStatus("Tweets loaded");
             }
-            else if (e.Key == Key.R) {
+            else
+            {
                 RefreshTimeline();
             }
         }
@@ -355,6 +380,30 @@ namespace SharpTwitter
         {
             // refresh timeline
             RefreshTimeline();
+        }
+
+        private void ShowHomeTimelineMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowHomeTimeline();
+        }
+
+        private void ShowTweetsOfUserMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // get the selected element in the tweet list
+            if (tweetListView.SelectedItem != null)
+            {
+                TwitterStatus status = tweetListView.SelectedItem as TwitterStatus;
+                ShowUserTimeline(status.User.ScreenName);
+            }
+        }
+
+        private void ReplyToTweetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (tweetListView.SelectedItem != null)
+            {
+                TwitterStatus status = tweetListView.SelectedItem as TwitterStatus;
+                ReplyToTweet(status);
+            }
         }
 
     }

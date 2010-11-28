@@ -27,6 +27,11 @@
                 <MenuItem Header="_Refresh" Click="Refresh_MenuItem_Clicked" ></MenuItem>
                 <MenuItem Header="_Exit" Click="Exit_MenuItem_Clicked"></MenuItem>
             </MenuItem>
+            <MenuItem Header="_Tweet">
+                <MenuItem Header="_Show Home Timeline" Name="ShowHomeTimelineMenuItem" Click="ShowHomeTimelineMenuItem_Click" ></MenuItem>
+                <MenuItem Header="_Show Tweets of User" Name="ShowTweetsOfUserMenuItem" Click="ShowTweetsOfUserMenuItem_Click" ></MenuItem>
+                <MenuItem Header="_Reply to Tweet" Name="ReplyToTweetMenuItem" Click="ReplyToTweetMenuItem_Click"></MenuItem>
+            </MenuItem>
         </Menu>
 
         <Label Name="StatusLabel" DockPanel.Dock="Bottom" Height="30" />
